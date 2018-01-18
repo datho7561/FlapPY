@@ -12,6 +12,7 @@ import sys, os, pygame, random, math
 # Declare window constants
 size = width, height = 400, 300
 dayColour = (128, 255, 255)
+sunsetColour = (255, 128, 128)
 nightColour = (0, 0, 128)
 pipeColour = (0, 255, 0)
 pipeOutlineColour = (0, 102, 0)
@@ -199,8 +200,9 @@ while True:
                 del pipes[:]
                 pipes.append(Pipe())
                 pipeTimer = 0
-        if event.type == pygame.KEYDOWN and event.key == 113:
-            noclip = True
+##        if event.type == pygame.KEYDOWN and event.key == 113:
+##            # TODO: remove implementation
+##            noclip = True
 
 
     ### PROCESS GAME LOGIC ###
@@ -265,15 +267,20 @@ while True:
 
     # Draw Sky
 
-    # Update sky colour
-    if score%20 < 10:
+    # Update sky colour (based on score)
+    if score%30 < 10:
         if bgColour[2] < dayColour[2]:
             bgColour = (bgColour[0]+4, bgColour[1]+8, bgColour[2]+4)
         else:
             bgColour = dayColour
+    elif score%30 < 20:
+        if bgColour[2] > sunsetColour[2]:
+            bgColour = (bgColour[0]+4, bgColour[1]-4, bgColour[2]-4)
+        else:
+            bgColour = sunsetColour
     else:
-        if bgColour[2] > nightColour[2]:
-            bgColour = (bgColour[0]-4, bgColour[1]-8, bgColour[2]-4)
+        if bgColour[1] > nightColour[1]:
+            bgColour = (bgColour[0]-8, bgColour[1]-4, bgColour[2])
         else:
             bgColour = nightColour
 
@@ -322,7 +329,7 @@ while True:
 
     else:
 
-        # This method of createing a translucent box came from StackOverFlow:
+        # This method of creating a translucent box came from StackOverFlow:
         #  https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangle-in-pygame
         gameOverScreen = pygame.Surface((width, int(2*gameoverFont.size("l")[1])))
         gameOverScreen.set_alpha(192)
