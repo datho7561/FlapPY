@@ -5,7 +5,6 @@
 ###############################################################################
 
 
-
 # Import important libraries. Note that pygame is used
 import sys, os, pygame, random, math
 
@@ -83,6 +82,26 @@ def reset():
     pipeTimer = 0
     bgColour = dayColour
 
+# TODO: implementation
+def highscore():
+
+    global score
+
+    f = open(getResourcePath("highscore.txt"), "r")
+    try:
+        prevHighscore = int(f.read())
+    except:
+        prevHighscore = 0
+    f.close()
+
+    if (score > prevHighscore):
+        f = open(getResourcePath("highscore.txt"), "w")
+        f.write(str(score))
+        f.close()
+        return str(score)
+
+    return str(prevHighscore)
+
 
 ### INITIALIZE PYGAME ###
 
@@ -105,6 +124,10 @@ birdImg = pygame.image.load(getResourcePath("bird.png"))
 birdImg.convert()
 cloudImg = pygame.image.load(getResourcePath("cloud.png"))
 cloudImg.convert()
+
+# Load highscore
+highscoreStr = highscore()
+
 
 # Access sounds and music
 flapSound = pygame.mixer.Sound(getResourcePath("flap.ogg"))
@@ -155,6 +178,7 @@ while True:
             if not noclip:
                 birdY = height
                 gameStarted = 2
+                highscoreStr = highscore()
                 explosion = Explosion(int(width/2), birdY)
         if birdY < 0:
             birdY = 0
@@ -184,6 +208,7 @@ while True:
                 # TODO: remove noclip
                 if not noclip:
                     gameStarted = 2
+                    highscoreStr = highscore()
                     explosion = Explosion(int(width/2), birdY)
 
     # update the clouds
@@ -275,7 +300,7 @@ while True:
         screen.blit(gameOverScreen, (0, int(height/2 - gameoverFont.size("l")[1])))
 
         # Game Over message with score over top of the translucent box
-        fsString = "Final Score: " + str(score)
+        fsString = "Final: " + str(score) + " High: " + highscoreStr
         resetString = "Press 'r' to reset"
         screen.blit(gameoverFont.render(fsString, True, gameoverColour), (int(width/2-gameoverFont.size(fsString)[0]/2), int(height/2 - gameoverFont.size("l")[1])))
         screen.blit(gameoverFont.render(resetString, True, gameoverColour), (int(width/2-gameoverFont.size(resetString)[0]/2), int(height/2)))
