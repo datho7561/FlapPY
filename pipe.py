@@ -1,16 +1,17 @@
 import random, pygame
 
 # Constants
-WIDTH = 20
+WIDTH = 30
+FACTOR = 5
 
 # The pipe class
 class Pipe:
 
-    global WIDTH
+    global WIDTH, FACTOR
 
     def __init__(self, scrWidth, scrHeight):
-        self.topPipe = random.randint(3*WIDTH, scrHeight - 6*WIDTH)
-        self.bottomPipe = self.topPipe + int(4*WIDTH)
+        self.topPipe = random.randint((FACTOR-2)*WIDTH, scrHeight - 2*(FACTOR-2)*WIDTH)
+        self.bottomPipe = self.topPipe + int(FACTOR*WIDTH)
         self.x = scrWidth
         self.scoredOn = False
         self.screenHeight = scrHeight

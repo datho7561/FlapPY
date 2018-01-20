@@ -17,7 +17,7 @@ from explosion import Explosion
 
 ### CONSTANTS ###
 
-size = width, height = 400, 300
+size = width, height = 800, 600
 dayColour = (128, 255, 255)
 sunsetColour = (255, 128, 128)
 nightColour = (0, 0, 128)
@@ -138,7 +138,7 @@ flapSound = pygame.mixer.Sound(getResourcePath("flap.ogg"))
 while True:
 
     # amount of time to wait between frames
-    pygame.time.Clock().tick(60)
+    pygame.time.Clock().tick(100)
 
 
     ### PROCESS EVENTS ###
@@ -147,13 +147,13 @@ while True:
         if event.type == pygame.QUIT:
             # If the close button is pressed, exit the program
             sys.exit()
-        if event.type == pygame.KEYDOWN and event.key == 32:
+        if event.type == pygame.KEYDOWN and (event.key == 32):
             if gameStarted == 0:
                 gameStarted = 1
-                birdVY = -5
+                birdVY = -8
                 flapSound.play()
             if gameStarted == 1:
-                birdVY = -5
+                birdVY = -8
                 flapSound.play()
         if event.type == pygame.KEYDOWN and event.key == 114:
             if gameStarted == 2:
@@ -196,7 +196,7 @@ while True:
         # Remove pipes that are out of bounds and add a new one if necessary
         pipes = [pipe for pipe in pipes if pipe.x > -birdWidth/2]
         pipeTimer += 1
-        if pipeTimer >= 40:
+        if pipeTimer >= 60:
             pipes.append(Pipe(width, height))
             pipeTimer = 0
 
@@ -219,7 +219,7 @@ while True:
         cloudTimer -= 1
         if cloudTimer <= 0:
             clouds.append(Cloud(height, width))
-            cloudTimer = random.randint(35,60)
+            cloudTimer = random.randint(60,150)
 
         # Move clouds
         for i in range(len(clouds)):
@@ -248,10 +248,10 @@ while True:
             bgColour = nightColour
 
     try:
-        screen.fill(bgColour)
+        if (score != 21):
+            screen.fill(bgColour)
     except:
-        print(bgColour)
-
+        screen.fill(((abs(bgColour[0])%256), (abs(bgColour[1])%256), (abs(bgColour[2])%256)))
 
     for i in range(len(clouds)):
         screen.blit(cloudImg, clouds[i].getRect())

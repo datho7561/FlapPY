@@ -7,7 +7,7 @@ class Explosion:
 
     def __init__(self, x, y):
         self.particles = list()
-        self.numParticles = random.randint(100, 400)
+        self.numParticles = random.randint(200, 500)
         for i in range (self.numParticles):
             self.particles.append( Particle(x, y) )
 
