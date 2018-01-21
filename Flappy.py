@@ -19,18 +19,18 @@ from explosion import Explosion
 
 size = width, height = 800, 600
 dayColour = (128, 255, 255)
-sunsetColour = (255, 128, 128)
-nightColour = (0, 0, 128)
+sunsetColour = (255, 128, 0)
+nightColour = (0, 0, 0)
 pipeColour = (0, 255, 0)
 pipeOutlineColour = (0, 102, 0)
-counterColour = (0, 0, 153)
+counterColour = (200, 200, 200)
 gameoverColour = (230, 0, 0)
 
 
 ### VARIABLE INITIALIZATION ###
 
 # Initialize the bird variables
-birdSize = birdWidth, birdHeight = 20, 20
+birdSize = birdWidth, birdHeight = 38, 38
 birdY = height/2
 birdVX = 2
 birdVY = 0
@@ -44,7 +44,7 @@ pipeTimer = 0
 # Clouds variables
 clouds = list()
 clouds.append(Cloud(height, width))
-cloudTimer = 40
+cloudTimer = 200
 
 # Sky variables
 bgColour = dayColour
@@ -131,14 +131,19 @@ highscoreStr = highscore()
 
 # Access sounds and music
 flapSound = pygame.mixer.Sound(getResourcePath("flap.ogg"))
+music = pygame.mixer.Sound(getResourcePath("music.ogg"))
+birdsSound = pygame.mixer.Sound(getResourcePath("birds.ogg"))
+stopSound = pygame.mixer.Sound(getResourcePath("stop.ogg"))
 
+# Start birds chirping
+birdsSound.play(loops=-1)
 
 ### GAME LOOP ###
 
 while True:
 
     # amount of time to wait between frames
-    pygame.time.Clock().tick(100)
+    pygame.time.Clock().tick(90)
 
 
     ### PROCESS EVENTS ###
@@ -151,6 +156,8 @@ while True:
             if gameStarted == 0:
                 gameStarted = 1
                 birdVY = -8
+                birdsSound.stop()
+                music.play(loops=-1)
                 flapSound.play()
             if gameStarted == 1:
                 birdVY = -8
@@ -158,6 +165,7 @@ while True:
         if event.type == pygame.KEYDOWN and event.key == 114:
             if gameStarted == 2:
                 reset()
+                birdsSound.play(loops=-1)
         if event.type == pygame.KEYDOWN and event.key == 113:
             # TODO: remove implementation
             if noclip:
@@ -179,6 +187,8 @@ while True:
                 birdY = height
                 gameStarted = 2
                 highscoreStr = highscore()
+                music.stop()
+                stopSound.play()
                 explosion = Explosion(int(width/2), birdY)
         if birdY < 0:
             birdY = 0
@@ -196,7 +206,7 @@ while True:
         # Remove pipes that are out of bounds and add a new one if necessary
         pipes = [pipe for pipe in pipes if pipe.x > -birdWidth/2]
         pipeTimer += 1
-        if pipeTimer >= 60:
+        if pipeTimer >= 80:
             pipes.append(Pipe(width, height))
             pipeTimer = 0
 
@@ -209,17 +219,19 @@ while True:
                 if not noclip:
                     gameStarted = 2
                     highscoreStr = highscore()
+                    music.stop()
+                    stopSound.play()
                     explosion = Explosion(int(width/2), birdY)
 
     # update the clouds
     if gameStarted == 1:
 
         # Remove clouds that are out of bounds and add a new one if necessary
-        clouds = [cloud for cloud in clouds if cloud.x > -birdWidth/2]
+        clouds = [cloud for cloud in clouds if cloud.x > -cloudImg.get_width()]
         cloudTimer -= 1
         if cloudTimer <= 0:
             clouds.append(Cloud(height, width))
-            cloudTimer = random.randint(60,150)
+            cloudTimer = random.randint(200,350)
 
         # Move clouds
         for i in range(len(clouds)):
@@ -238,7 +250,7 @@ while True:
             bgColour = dayColour
     elif score%30 < 20:
         if bgColour[2] > sunsetColour[2]:
-            bgColour = (bgColour[0]+4, bgColour[1]-4, bgColour[2]-4)
+            bgColour = (bgColour[0]+4, bgColour[1]-4, bgColour[2]-8)
         else:
             bgColour = sunsetColour
     else:
@@ -248,16 +260,17 @@ while True:
             bgColour = nightColour
 
     try:
-        if (score != 21):
-            screen.fill(bgColour)
+        screen.fill(bgColour)
     except:
-        screen.fill(((abs(bgColour[0])%256), (abs(bgColour[1])%256), (abs(bgColour[2])%256)))
+        screen.fill(((abs(bgColour[0]-2)), (abs(bgColour[1]-2)), (abs(bgColour[2]-2))))
 
-    for i in range(len(clouds)):
-        screen.blit(cloudImg, clouds[i].getRect())
+    # Draw clouds
+    if (score%30<20):
+        for i in range(len(clouds)):
+            screen.blit(cloudImg, clouds[i].getRect())
 
     # Draw bird
-    screen.blit(birdImg, birdRect)
+    screen.blit(birdImg, (birdRect[0]-1, birdRect[1]-1, birdRect[2], birdRect[3]))
 
     # Draw pipes
     for i in range(len(pipes)):
@@ -300,10 +313,10 @@ while True:
         screen.blit(gameOverScreen, (0, int(height/2 - gameoverFont.size("l")[1])))
 
         # Game Over message with score over top of the translucent box
-        fsString = "Final: " + str(score) + " High: " + highscoreStr
+        fsString = "Final Score: " + str(score) + "   Highscore: " + highscoreStr
         resetString = "Press 'r' to reset"
-        screen.blit(gameoverFont.render(fsString, True, gameoverColour), (int(width/2-gameoverFont.size(fsString)[0]/2), int(height/2 - gameoverFont.size("l")[1])))
-        screen.blit(gameoverFont.render(resetString, True, gameoverColour), (int(width/2-gameoverFont.size(resetString)[0]/2), int(height/2)))
+        screen.blit(gameoverFont.render(fsString, True, counterColour), (int(width/2-gameoverFont.size(fsString)[0]/2), int(height/2 - gameoverFont.size("l")[1])))
+        screen.blit(gameoverFont.render(resetString, True, counterColour), (int(width/2-gameoverFont.size(resetString)[0]/2), int(height/2)))
 
     # For the built-in double buffer
     pygame.display.flip()
