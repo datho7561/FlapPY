@@ -13,6 +13,7 @@ from cloud import Cloud
 from particle import Particle
 from pipe import Pipe
 from explosion import Explosion
+from sky import Sky
 
 
 ### CONSTANTS ###
@@ -47,7 +48,8 @@ clouds.append(Cloud(height, width))
 cloudTimer = 200
 
 # Sky variables
-bgColour = dayColour
+theSky = Sky(width, height)
+## bgColour = dayColour
 
 # Explosion variable
 explosion = Explosion(0, 0)
@@ -80,7 +82,6 @@ def reset():
     del pipes[:]
     pipes.append(Pipe(width, height))
     pipeTimer = 0
-    bgColour = dayColour
 
 # TODO: implementation
 def highscore():
@@ -242,27 +243,7 @@ while True:
 
     # Draw Sky
 
-    # Update sky colour (based on score)
-    if score%30 < 10:
-        if bgColour[2] < dayColour[2]:
-            bgColour = (bgColour[0]+4, bgColour[1]+8, bgColour[2]+4)
-        else:
-            bgColour = dayColour
-    elif score%30 < 20:
-        if bgColour[2] > sunsetColour[2]:
-            bgColour = (bgColour[0]+4, bgColour[1]-4, bgColour[2]-8)
-        else:
-            bgColour = sunsetColour
-    else:
-        if bgColour[1] > nightColour[1]:
-            bgColour = (bgColour[0]-8, bgColour[1]-4, bgColour[2])
-        else:
-            bgColour = nightColour
-
-    try:
-        screen.fill(bgColour)
-    except:
-        screen.fill(((abs(bgColour[0]-2)), (abs(bgColour[1]-2)), (abs(bgColour[2]-2))))
+    screen.blit(theSky.draw(int(score%30//10)), (0, 0))
 
     # Draw clouds
     if (score%30<20):
