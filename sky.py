@@ -70,3 +70,7 @@ class Sky:
         return (startColour[0] + int(position * (endColour[0] - startColour[0]) / TRANSITION_FRAMES),
                 startColour[1] + int(position * (endColour[1] - startColour[1]) / TRANSITION_FRAMES),
                 startColour[2] + int(position * (endColour[2] - startColour[2]) / TRANSITION_FRAMES))
+
+    def reset(self):
+        self.transitionTimer = 0
+        self.lastTime = 0

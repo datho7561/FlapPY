@@ -49,7 +49,6 @@ cloudTimer = 200
 
 # Sky variables
 theSky = Sky(width, height)
-## bgColour = dayColour
 
 # Explosion variable
 explosion = Explosion(0, 0)
@@ -72,13 +71,14 @@ def reset():
     # It is important that the game variables are global so that this function
     #  can reset them
     global score, gameStarted, bgColour, dayColour, pipes, birdVY, birdY, height
-    global pipeTimer
+    global pipeTimer, theSky
 
     # Set everything back to its starting condition
     gameStarted = 0
     birdVY = 0
     birdY = height/2
     score = 0
+    theSky.reset()
     del pipes[:]
     pipes.append(Pipe(width, height))
     pipeTimer = 0
