@@ -144,7 +144,7 @@ birdsSound.play(loops=-1)
 while True:
 
     # amount of time to wait between frames
-    pygame.time.Clock().tick(90)
+    pygame.time.Clock().tick(65)
 
 
     ### PROCESS EVENTS ###
