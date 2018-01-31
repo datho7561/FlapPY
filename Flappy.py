@@ -14,6 +14,7 @@ from particle import Particle
 from pipe import Pipe
 from explosion import Explosion
 from sky import Sky
+from tears import Tears
 
 
 ### CONSTANTS ###
@@ -52,6 +53,9 @@ theSky = Sky(width, height)
 
 # Explosion variable
 explosion = Explosion(0, 0)
+
+# Tears variable
+tears = Tears(0, 0, width, height)
 
 # Game variables
 score = 0
@@ -190,7 +194,10 @@ while True:
                 highscoreStr = highscore()
                 music.stop()
                 stopSound.play()
+
+                # Create gameover effects (explosion and tears)
                 explosion = Explosion(int(width/2), birdY)
+                tears = Tears(int(width/2), birdY, width, height)
         if birdY < 0:
             birdY = 0
         birdVY += birdAY
@@ -223,8 +230,9 @@ while True:
                     music.stop()
                     stopSound.play()
                     explosion = Explosion(int(width/2), birdY)
+                    tears = Tears(int(width/2), birdY, width, height)
 
-    # update the clouds
+    # Update the clouds
     if gameStarted == 1:
 
         # Remove clouds that are out of bounds and add a new one if necessary
@@ -262,8 +270,11 @@ while True:
         pygame.draw.rect(screen, pipeOutlineColour, pipes[i].getRect()[0], 2)
         pygame.draw.rect(screen, pipeOutlineColour, pipes[i].getRect()[1], 2)
 
-    # Draw the explosion
+    # Draw the explosion and tears
     if gameStarted == 2:
+        # Tears
+        screen.blit(tears.update(), (0,0,1,1))
+        # Explosion
         explosionToDraw = explosion.draw()
         for i in range(len(explosionToDraw[0])):
             pygame.draw.rect(screen, explosionToDraw[1][i], explosionToDraw[0][i], 0)
