@@ -9,7 +9,6 @@
 import sys, os, pygame, random, math
 
 # Import self-created modules
-from cloud import Cloud
 from particle import Particle
 from pipe import Pipe
 from explosion import Explosion
@@ -43,14 +42,6 @@ pipes = list()
 pipes.append(Pipe(width, height))
 pipeTimer = 0
 
-# Clouds variables
-clouds = list()
-clouds.append(Cloud(height, width))
-cloudTimer = 200
-
-# Sky variables
-theSky = Sky(width, height)
-
 # Explosion variable
 explosion = Explosion(0, 0)
 
@@ -69,7 +60,7 @@ def getResourcePath(name):
     """ Function to get a resource that's in the same folder as the script"""
     return (os.path.realpath(__file__)[0:len(os.path.realpath(__file__))-len(os.path.basename(__file__))] + name)
 
-# Reset function.
+# Reset function
 def reset():
     """ Resets the bird, pipes, sky, and game condition """
     # It is important that the game variables are global so that this function
@@ -87,7 +78,7 @@ def reset():
     pipes.append(Pipe(width, height))
     pipeTimer = 0
 
-# TODO: implementation
+# Reads the previous highscore and writes a new one if the current score is greater
 def highscore():
 
     global score
@@ -127,12 +118,16 @@ gameoverFont = pygame.font.SysFont("Arial Bold", 48)
 # Access images
 birdImg = pygame.image.load(getResourcePath("bird.png"))
 birdImg.convert()
-cloudImg = pygame.image.load(getResourcePath("cloud.png"))
+cloudImg = pygame.image.load(getResourcePath("clouds.png"))
 cloudImg.convert()
+mountainImg = pygame.image.load(getResourcePath("mountains.png"))
+mountainImg.convert()
 
 # Load highscore
 highscoreStr = highscore()
 
+# Initialize the sky (doing this here because it needs the cloud and mountain img)
+theSky = Sky(width, height, cloudImg, mountainImg)
 
 # Access sounds and music
 flapSound = pygame.mixer.Sound(getResourcePath("flap.ogg"))
@@ -147,8 +142,11 @@ birdsSound.play(loops=-1)
 
 while True:
 
-    # amount of time to wait between frames
-    pygame.time.Clock().tick(65)
+    # FRAMERATE
+    pygame.time.Clock().tick(75)
+
+    # For testing purposes
+##    pygame.time.Clock().tick(150)
 
 
     ### PROCESS EVENTS ###
@@ -232,31 +230,10 @@ while True:
                     explosion = Explosion(int(width/2), birdY)
                     tears = Tears(int(width/2), birdY, width, height)
 
-    # Update the clouds
-    if gameStarted == 1:
-
-        # Remove clouds that are out of bounds and add a new one if necessary
-        clouds = [cloud for cloud in clouds if cloud.x > -cloudImg.get_width()]
-        cloudTimer -= 1
-        if cloudTimer <= 0:
-            clouds.append(Cloud(height, width))
-            cloudTimer = random.randint(200,350)
-
-        # Move clouds
-        for i in range(len(clouds)):
-            clouds[i].move(-birdVX/3)
-
-
     ### DRAW ###
 
-    # Draw Sky
-
+    # Draw sky
     screen.blit(theSky.draw(int(score%30//10)), (0, 0))
-
-    # Draw clouds
-    if (score%30<20):
-        for i in range(len(clouds)):
-            screen.blit(cloudImg, clouds[i].getRect())
 
     # Draw bird
     screen.blit(birdImg, (birdRect[0]-1, birdRect[1]-1, birdRect[2], birdRect[3]))

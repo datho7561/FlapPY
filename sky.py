@@ -2,7 +2,7 @@ from pygame import Surface, draw
 
 class Sky:
 
-    global DAY1, DAY2, SET1, SET2, NIGHT1, NIGHT2, TRANSITION_FRAMES
+    global DAY1, DAY2, SET1, SET2, NIGHT1, NIGHT2, MOON_COLOUR, MOON_RAD, MOON_RAISE, TRANSITION_FRAMES
 
     DAY1 = (102, 153, 255)
     DAY2 = (153, 204, 255)
@@ -13,13 +13,60 @@ class Sky:
     NIGHT1 = (0, 0, 0)
     NIGHT2 = (0, 0, 77)
 
+    MOON_COLOUR = (255, 255, 204)
+    MOON_RAD = 100
+    MOON_RAISE = 5
+
     TRANSITION_FRAMES = 60
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, cloudImg, mountainImg):
         """ Create a new Sky object """
         self.image = Surface((width, height))
         self.transitionTimer = 0
         self.lastTime = 0
+        self.cloudImg = cloudImg
+        self.mountainImg = mountainImg
+        self.width = width
+        self.height = height
+
+        # Create the image list
+        self.images = []
+
+        # Prerender background images
+        self.prerender()
+
+    def prerender(self):
+        """ Renderes all the frames, putting them in the images list """
+
+        # Add the frames to the list
+
+        # Day frames
+        for i in range(TRANSITION_FRAMES + 1):
+            self.gradient(self.transition(DAY1, SET1, i),
+                     self.transition(DAY2, SET2, i))
+            self.image.blit(self.cloudImg, (0, 0))
+            self.image.blit(self.mountainImg, (0, 0))
+            self.images.append(self.image.copy())
+
+        # Evening frames
+        for i in range(TRANSITION_FRAMES + 1):
+            self.gradient(self.transition(SET1, NIGHT1, i),
+                     self.transition(SET2, NIGHT2, i))
+            draw.circle(self.image, MOON_COLOUR,
+                        (int(self.width*3/4), self.height - i*MOON_RAISE), MOON_RAD)
+            self.image.blit(self.cloudImg, (0, 0))
+            self.image.blit(self.mountainImg, (0, 0))
+            self.images.append(self.image.copy())
+
+        # Night frames
+        for i in range(TRANSITION_FRAMES + 1):
+            self.gradient(self.transition(NIGHT1, DAY1, i),
+                     self.transition(NIGHT2, DAY2, i))
+            draw.circle(self.image, MOON_COLOUR, (int(self.width*3/4),
+                        self.height + MOON_RAISE * (i - TRANSITION_FRAMES)), MOON_RAD)
+            self.image.blit(self.cloudImg, (0, 0))
+            self.image.blit(self.mountainImg, (0, 0))
+            self.images.append(self.image.copy())
 
     def draw(self, time):
         """ Updates self based on time and draws self to screen,
@@ -36,19 +83,8 @@ class Sky:
         if self.lastTime != time and self.transitionTimer == 0:
             self.transitionTimer = 1
 
-        # Print colour of gradient based on time of day,
-        #  taking into account any transitions between times of day
-        if self.lastTime == 0:
-            self.gradient(self.transition(DAY1, SET1, self.transitionTimer),
-                     self.transition(DAY2, SET2, self.transitionTimer))
-        elif self.lastTime == 1:
-            self.gradient(self.transition(SET1, NIGHT1, self.transitionTimer),
-                     self.transition(SET2, NIGHT2, self.transitionTimer))
-        else:
-            self.gradient(self.transition(NIGHT1, DAY1, self.transitionTimer),
-                     self.transition(NIGHT2, DAY2, self.transitionTimer))
+        self.image = self.images[self.transitionTimer + self.lastTime * TRANSITION_FRAMES]
 
-        # Return the sky to be drawn
         return self.image
 
     def gradient(self, topColour, bottomColour):
