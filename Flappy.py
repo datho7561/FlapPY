@@ -8,7 +8,7 @@
 # Import important libraries. Note that pygame is used
 import sys, os, pygame, random, math
 
-# Import self-created modules
+# Import created modules
 from particle import Particle
 from pipe import Pipe
 from explosion import Explosion
@@ -19,9 +19,6 @@ from tears import Tears
 ### CONSTANTS ###
 
 size = width, height = 800, 600
-dayColour = (128, 255, 255)
-sunsetColour = (255, 128, 0)
-nightColour = (0, 0, 0)
 pipeColour = (0, 255, 0)
 pipeOutlineColour = (0, 102, 0)
 counterColour = (200, 200, 200)
@@ -40,19 +37,19 @@ birdAY = .5
 # Pipe variables
 pipes = list()
 pipes.append(Pipe(width, height))
-pipeTimer = 0
+pipeTimer = 0 # counts up to some number then creates a new pipe
 
-# Explosion variable
+# Explosion variable, recreated at the players location on death
 explosion = Explosion(0, 0)
 
-# Tears variable
+# Tears variable, recreated at the players location on death
 tears = Tears(0, 0, width, height)
 
-# Game variables
+# Used to keep track of the pipes the player has gotten through as well as
+#  the time of day
 score = 0
+# 0 indicates starting screen, 1 indicates in play, and 2 indicated gameover screen
 gameStarted = 0
-noclip = False
-
 
 ### FUNCTIONS ###
 
@@ -60,7 +57,6 @@ def getResourcePath(name):
     """ Function to get a resource that's in the same folder as the script"""
     return (os.path.realpath(__file__)[0:len(os.path.realpath(__file__))-len(os.path.basename(__file__))] + name)
 
-# Reset function
 def reset():
     """ Resets the bird, pipes, sky, and game condition """
     # It is important that the game variables are global so that this function
@@ -78,18 +74,20 @@ def reset():
     pipes.append(Pipe(width, height))
     pipeTimer = 0
 
-# Reads the previous highscore and writes a new one if the current score is greater
 def highscore():
-
+    """ Reads the previous highscore and writes a new one if the current score is greater """
     global score
 
-    f = open(getResourcePath("highscore.txt"), "r")
+    # Try to open the file in read mode and read it
+    #  record the highscore or zero if the file is not present
     try:
+        f = open(getResourcePath("highscore.txt"), "r")
         prevHighscore = int(f.read())
+        f.close()
     except:
         prevHighscore = 0
-    f.close()
 
+    # If the current score is the new highscore, write it to file
     if (score > prevHighscore):
         f = open(getResourcePath("highscore.txt"), "w")
         f.write(str(score))
@@ -126,7 +124,8 @@ mountainImg.convert()
 # Load highscore
 highscoreStr = highscore()
 
-# Initialize the sky (doing this here because it needs the cloud and mountain img)
+# Initialize the sky
+#  This is done here because it needs the cloud and mountain images
 theSky = Sky(width, height, cloudImg, mountainImg)
 
 # Access sounds and music
@@ -142,12 +141,8 @@ birdsSound.play(loops=-1)
 
 while True:
 
-    # FRAMERATE
+    ## FRAMERATE ##
     pygame.time.Clock().tick(75)
-
-    # For testing purposes
-##    pygame.time.Clock().tick(150)
-
 
     ### PROCESS EVENTS ###
 
@@ -169,12 +164,6 @@ while True:
             if gameStarted == 2:
                 reset()
                 birdsSound.play(loops=-1)
-        if event.type == pygame.KEYDOWN and event.key == 113:
-            # TODO: remove implementation
-            if noclip:
-                noclip = False
-            else:
-                noclip = True
 
 
     ### PROCESS GAME LOGIC ###
@@ -185,17 +174,15 @@ while True:
         # Move bird
         birdY += birdVY
         if birdY > height:
-            # TODO: remove noclip
-            if not noclip:
-                birdY = height
-                gameStarted = 2
-                highscoreStr = highscore()
-                music.stop()
-                stopSound.play()
+            birdY = height
+            gameStarted = 2
+            highscoreStr = highscore()
+            music.stop()
+            stopSound.play()
 
-                # Create gameover effects (explosion and tears)
-                explosion = Explosion(int(width/2), birdY)
-                tears = Tears(int(width/2), birdY, width, height)
+            # Create gameover effects (explosion and tears)
+            explosion = Explosion(int(width/2), birdY)
+            tears = Tears(int(width/2), birdY, width, height)
         if birdY < 0:
             birdY = 0
         birdVY += birdAY
@@ -221,14 +208,12 @@ while True:
             pipes[i].move(birdVX)
             score += pipes[i].addScore()
             if pipes[i].checkCollision(birdRect):
-                # TODO: remove noclip
-                if not noclip:
-                    gameStarted = 2
-                    highscoreStr = highscore()
-                    music.stop()
-                    stopSound.play()
-                    explosion = Explosion(int(width/2), birdY)
-                    tears = Tears(int(width/2), birdY, width, height)
+                gameStarted = 2
+                highscoreStr = highscore()
+                music.stop()
+                stopSound.play()
+                explosion = Explosion(int(width/2), birdY)
+                tears = Tears(int(width/2), birdY, width, height)
 
     ### DRAW ###
 
@@ -259,9 +244,11 @@ while True:
     # Draw the title if the game hasn't started yet
     if gameStarted == 0:
 
-        screen.blit(titleFont.render("Flappy", True, pipeColour), pygame.Rect(int(width/2-titleFont.size("Flappy")[0]/2), 0, 1, 1))
+        screen.blit(titleFont.render("Flappy", True, pipeColour),
+                    pygame.Rect(int(width/2-titleFont.size("Flappy")[0]/2), 50, 1, 1))
 
     elif gameStarted == 1:
+        # Draw the current score if the game is in progress
 
         # Translucent box behind score
         scoreScreen = pygame.Surface(font.size(str(score)))
@@ -273,6 +260,7 @@ while True:
         screen.blit(font.render(str(score), True, counterColour), (0,0))
 
     else:
+        # Draw the game over information if the game is over
 
         # This method of creating a translucent box came from StackOverFlow:
         #  https://stackoverflow.com/questions/6339057/draw-a-transparent-rectangle-in-pygame
@@ -287,5 +275,5 @@ while True:
         screen.blit(gameoverFont.render(fsString, True, counterColour), (int(width/2-gameoverFont.size(fsString)[0]/2), int(height/2 - gameoverFont.size("l")[1])))
         screen.blit(gameoverFont.render(resetString, True, counterColour), (int(width/2-gameoverFont.size(resetString)[0]/2), int(height/2)))
 
-    # For the built-in double buffer
+    # For the pygame built-in double buffer
     pygame.display.flip()
